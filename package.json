@@ -1,0 +1,22 @@
+{
+  "name": "eduprep-tma",
+  "version": "1.0.0",
+  "description": "Telegram Mini App for learning Physics and English with AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js & node bot.js",
+    "dev": "node server.js & node bot.js",
+    "bot": "node bot.js",
+    "tunnel": "ssh -o StrictHostKeyChecking=no -R 80:localhost:3000 nokey@localhost.run"
+  },
+  "keywords": [
+    "telegram-mini-app",
+    "edtech",
+    "physics",
+    "english",
+    "ai-tutor",
+    "ielts"
+  ],
+  "author": "Davronjon",
+  "license": "MIT"
+}
