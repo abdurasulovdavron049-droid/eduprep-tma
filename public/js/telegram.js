@@ -39,15 +39,32 @@ const TelegramApp = {
   },
 
   applyUserData() {
-    const avatarEl = document.getElementById('user-avatar');
-    const nameEl = document.getElementById('user-name');
+    if (!this.user) return;
+    const fullName = `${this.user.first_name || ''} ${this.user.last_name || ''}`.trim() || 'Foydalanuvchi';
+    const initial = (this.user.first_name || 'U').charAt(0).toUpperCase();
+
+    // Update all name elements safely
+    const nameEls = [
+      document.getElementById('sidebar-name'),
+      document.getElementById('dash-username'),
+      document.getElementById('user-name')
+    ];
+    nameEls.forEach(el => {
+      if (el) el.innerText = fullName;
+    });
+
+    // Update avatar elements safely
+    const avatarEls = [
+      document.getElementById('sidebar-avatar'),
+      document.getElementById('user-avatar')
+    ];
+    avatarEls.forEach(el => {
+      if (el) el.innerText = initial;
+    });
+
+    // Greeting message
     const greetingEl = document.getElementById('user-greeting');
-
-    if (this.user) {
-      const fullName = `${this.user.first_name || ''} ${this.user.last_name || ''}`.trim() || 'O\'quvchi';
-      nameEl.innerText = fullName;
-      avatarEl.innerText = (this.user.first_name || 'U').charAt(0).toUpperCase();
-
+    if (greetingEl) {
       const hour = new Date().getHours();
       if (hour >= 5 && hour < 12) greetingEl.innerText = 'Xayrli tong!';
       else if (hour >= 12 && hour < 18) greetingEl.innerText = 'Xayrli kun!';
@@ -56,9 +73,9 @@ const TelegramApp = {
   },
 
   applyFallbackUser() {
-    const nameEl = document.getElementById('user-name');
-    if (nameEl && nameEl.innerText === 'Foydalanuvchi') {
-      nameEl.innerText = 'Azizbek (Demo)';
+    const nameEl = document.getElementById('sidebar-name') || document.getElementById('dash-username') || document.getElementById('user-name');
+    if (nameEl && (nameEl.innerText === 'Foydalanuvchi' || !nameEl.innerText)) {
+      nameEl.innerText = 'Davronjon';
     }
   },
 

@@ -64,18 +64,19 @@ let currentQuizIndex = 0;
 let userQuizScore = 0;
 
 function setPhysicsSample(id) {
-  TelegramApp.haptic('selection');
-  const textarea = document.getElementById('physics-input');
-  if (samplePhysicsProblems[id]) {
+  if (window.TelegramApp) TelegramApp.haptic('selection');
+  const textarea = document.getElementById('physics-problem-input') || document.getElementById('physics-input');
+  if (textarea && samplePhysicsProblems[id]) {
     textarea.value = samplePhysicsProblems[id];
   }
 }
 
 async function solvePhysicsProblem() {
-  TelegramApp.haptic('medium');
-  const input = document.getElementById('physics-input').value.trim();
-  const resultCard = document.getElementById('physics-result');
-  const resultBody = document.getElementById('physics-result-body');
+  if (window.TelegramApp) TelegramApp.haptic('medium');
+  const inputEl = document.getElementById('physics-problem-input') || document.getElementById('physics-input');
+  const input = inputEl ? inputEl.value.trim() : '';
+  const resultCard = document.getElementById('physics-solution-result') || document.getElementById('physics-result');
+  const resultBody = document.getElementById('physics-result-body') || resultCard;
   const solveBtn = document.getElementById('btn-solve-physics');
 
   if (!input) {
@@ -84,8 +85,10 @@ async function solvePhysicsProblem() {
   }
 
   // Loading state
-  solveBtn.disabled = true;
-  solveBtn.innerHTML = `<span class="spinner"></span> <span>Gemini AI hisoblamoqda...</span>`;
+  if (solveBtn) {
+    solveBtn.disabled = true;
+    solveBtn.innerHTML = `<span class="spinner"></span> <span>Gemini AI hisoblamoqda...</span>`;
+  }
 
   try {
     const sysPrompt = `Sen Fizika bo'yicha xalqaro olimpiada ustozi va professorman. Berilgan fizika masalasini o'zbek tilida quyidagi aniq 4 ta qismga bo'lib qadamma-qadam yechib ber:
@@ -108,19 +111,23 @@ Faqat chiroyli HTML teglari (h4, div class="formula-box", p, b) dan foydalan, ma
       solutionHtml = generatePhysicsSolution(input);
     }
 
-    resultBody.innerHTML = solutionHtml;
-    resultCard.classList.remove('hidden');
-    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (resultBody) resultBody.innerHTML = solutionHtml;
+    if (resultCard) {
+      resultCard.classList.remove('hidden');
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
-    TelegramApp.haptic('success');
-    addXP(15);
+    if (window.TelegramApp) TelegramApp.haptic('success');
+    if (typeof addXP === 'function') addXP(15);
   } catch (err) {
     console.error('Solve error:', err);
-    resultBody.innerHTML = generatePhysicsSolution(input);
-    resultCard.classList.remove('hidden');
+    if (resultBody) resultBody.innerHTML = generatePhysicsSolution(input);
+    if (resultCard) resultCard.classList.remove('hidden');
   } finally {
-    solveBtn.disabled = false;
-    solveBtn.innerHTML = `<span>AI bilan yechish</span> <span class="btn-icon">⚡</span>`;
+    if (solveBtn) {
+      solveBtn.disabled = false;
+      solveBtn.innerHTML = `<span>⚡ Qadamma-qadam Yechimni Chiqarish</span>`;
+    }
   }
 }
 
@@ -309,7 +316,7 @@ function restartQuiz() {
 }
 
 function initFormulaList() {
-  const container = document.getElementById('formula-list-container');
+  const container = document.getElementById('formula-quick-list') || document.getElementById('formula-list-container');
   if (!container) return;
 
   container.innerHTML = physicsFormulas.map(f => `
@@ -322,14 +329,16 @@ function initFormulaList() {
 }
 
 function filterFormulas() {
-  const query = document.getElementById('formula-search').value.toLowerCase();
+  const searchEl = document.getElementById('formula-search');
+  const query = searchEl ? searchEl.value.toLowerCase() : '';
   const filtered = physicsFormulas.filter(f => 
     f.title.toLowerCase().includes(query) || 
     f.category.toLowerCase().includes(query) ||
     f.tex.toLowerCase().includes(query)
   );
 
-  const container = document.getElementById('formula-list-container');
+  const container = document.getElementById('formula-quick-list') || document.getElementById('formula-list-container');
+  if (!container) return;
   container.innerHTML = filtered.map(f => `
     <div class="formula-item">
       <div class="formula-title">${f.category}: ${f.title}</div>
@@ -409,16 +418,18 @@ function initPhysicsSpeechRecognition() {
 
     physicsRecognition.onstart = () => {
       isPhysicsRecording = true;
-      const micBtn = document.getElementById('physics-mic-btn');
+      const micBtn = document.getElementById('mic-toggle-physics-btn') || document.getElementById('physics-mic-btn');
       if (micBtn) micBtn.classList.add('recording');
-      TelegramApp.haptic('medium');
+      const micLabel = document.getElementById('mic-physics-label');
+      if (micLabel) micLabel.innerText = "Tinglayapman... (Gapiring)";
+      if (window.TelegramApp) TelegramApp.haptic('medium');
     };
 
     physicsRecognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      const input = document.getElementById('physics-dialogue-input');
+      const input = document.getElementById('physics-voice-input') || document.getElementById('physics-dialogue-input');
       if (input) input.value = transcript;
-      TelegramApp.haptic('success');
+      if (window.TelegramApp) TelegramApp.haptic('success');
     };
 
     physicsRecognition.onerror = (event) => {
@@ -455,8 +466,10 @@ function togglePhysicsSpeechRecognition() {
 
 function stopPhysicsRecording() {
   isPhysicsRecording = false;
-  const micBtn = document.getElementById('physics-mic-btn');
+  const micBtn = document.getElementById('mic-toggle-physics-btn') || document.getElementById('physics-mic-btn');
   if (micBtn) micBtn.classList.remove('recording');
+  const micLabel = document.getElementById('mic-physics-label');
+  if (micLabel) micLabel.innerText = "O'zbekcha gapirish uchun bosing";
 }
 
 // O'zbek tilida matnni ovoz chiqarib o'qish (TTS)
@@ -475,11 +488,13 @@ function speakTextUz(text) {
 window.speakUzbek = speakTextUz;
 
 function changePhysicsTopic() {
-  TelegramApp.haptic('selection');
+  if (window.TelegramApp) TelegramApp.haptic('selection');
   physicsDialogueStep = 0;
-  const topicKey = document.getElementById('physics-topic-select').value;
+  const selectEl = document.getElementById('physics-topic-select');
+  const topicKey = selectEl ? selectEl.value : 'universe';
   const topicData = physicsUzbekTopics[topicKey] || physicsUzbekTopics.universe;
-  const dialogueBox = document.getElementById('physics-dialogue-box');
+  const dialogueBox = document.getElementById('physics-voice-dialogue') || document.getElementById('physics-dialogue-box');
+  if (!dialogueBox) return;
 
   dialogueBox.innerHTML = `
     <div class="message ai-message">
@@ -491,41 +506,44 @@ function changePhysicsTopic() {
   `;
 }
 
-function handlePhysicsDialogueKeyPress(e) {
+function handlePhysicsVoiceKeyPress(e) {
   if (e.key === 'Enter') {
-    sendPhysicsDialogueMessage();
+    sendPhysicsVoiceMessage();
   }
 }
+function handlePhysicsDialogueKeyPress(e) {
+  handlePhysicsVoiceKeyPress(e);
+}
 
-async function sendPhysicsDialogueMessage() {
-  const input = document.getElementById('physics-dialogue-input');
+async function sendPhysicsVoiceMessage() {
+  const input = document.getElementById('physics-voice-input') || document.getElementById('physics-dialogue-input');
+  if (!input) return;
   const userText = input.value.trim();
   if (!userText) return;
 
-  TelegramApp.haptic('medium');
-  const dialogueBox = document.getElementById('physics-dialogue-box');
+  if (window.TelegramApp) TelegramApp.haptic('medium');
+  const dialogueBox = document.getElementById('physics-voice-dialogue') || document.getElementById('physics-dialogue-box');
+  if (!dialogueBox) return;
 
   // Foydalanuvchi xabarini qo'shish
   dialogueBox.innerHTML += `
-    <div class="message user-message">
-      <div class="msg-bubble">
-        ${escapeHtml(userText)}
-      </div>
+    <div class="chat-bubble user-bubble">
+      <p>${escapeHtml(userText)}</p>
     </div>
   `;
   input.value = '';
   dialogueBox.scrollTop = dialogueBox.scrollHeight;
 
-  const topicKey = document.getElementById('physics-topic-select').value;
+  const selectEl = document.getElementById('physics-topic-select');
+  const topicKey = selectEl ? selectEl.value : 'mexanika';
   const topicData = physicsUzbekTopics[topicKey] || physicsUzbekTopics.universe;
 
   // Loading indicator
   const loadId = 'phys-load-' + Date.now();
   dialogueBox.innerHTML += `
-    <div class="message ai-message" id="${loadId}">
-      <div class="msg-bubble">
-        <span class="spinner"></span> <i>Professor o'ylamoqda...</i>
-      </div>
+    <div class="chat-bubble ai-bubble" id="${loadId}">
+      <div class="bubble-header"><span class="speaker-name">Professor AI</span></div>
+      <p><span class="spinner"></span> <i>Professor o'ylamoqda...</i></p>
     </div>
   `;
   dialogueBox.scrollTop = dialogueBox.scrollHeight;
@@ -545,11 +563,12 @@ Javobni sodda HTML teglari (<b>, <i>, <p>) orqali qaytar.`;
 
     if (geminiText) {
       dialogueBox.innerHTML += `
-        <div class="message ai-message">
-          <div class="msg-bubble">
-            ${geminiText.replace(/\n/g, '<br>')}
+        <div class="chat-bubble ai-bubble">
+          <div class="bubble-header">
+            <span class="speaker-name">Professor AI</span>
+            <button class="btn-voice-mini" onclick="speakTextUz('${escapeHtml(geminiText.replace(/<[^>]*>?/gm, '')).substring(0, 150).replace(/'/g, "\\'")}')">🔊 Tinglash</button>
           </div>
-          <button class="voice-play-btn" onclick="speakTextUz('${escapeHtml(geminiText.replace(/<[^>]*>?/gm, '')).substring(0, 150).replace(/'/g, "\\'")}')">🔊 Tinglash</button>
+          <p>${geminiText}</p>
         </div>
       `;
     } else {
@@ -558,28 +577,32 @@ Javobni sodda HTML teglari (<b>, <i>, <p>) orqali qaytar.`;
       const analysis = analyzeUzbekPhysicsAnswer(userText, topicKey);
 
       dialogueBox.innerHTML += `
-        <div class="message ai-message">
-          <div class="msg-bubble">
-            <p>${analysis.explanation}</p>
-            <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.15); margin: 8px 0;">
-            <p><b>🤔 Keyingi savol:</b> ${nextQ}</p>
+        <div class="chat-bubble ai-bubble">
+          <div class="bubble-header">
+            <span class="speaker-name">Professor AI</span>
+            <button class="btn-voice-mini" onclick="speakTextUz('${nextQ.replace(/'/g, "\\'")}')">🔊 Tinglash</button>
           </div>
-          <div class="feedback-bubble" style="background: rgba(0, 210, 255, 0.12); border-color: rgba(0, 210, 255, 0.3); color: #7dd3fc;">
+          <p>${analysis.explanation}</p>
+          <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.15); margin: 8px 0;">
+          <p><b>🤔 Keyingi savol:</b> ${nextQ}</p>
+          <div class="feedback-bubble" style="background: rgba(0, 210, 255, 0.12); border-color: rgba(0, 210, 255, 0.3); color: #7dd3fc; margin-top: 6px; padding: 6px 10px; border-radius: 8px;">
             <b>⚛️ Fizik tahlil:</b> ${analysis.insight}
           </div>
-          <button class="voice-play-btn" onclick="speakTextUz('${nextQ.replace(/'/g, "\\'")}')">🔊 Tinglash</button>
         </div>
       `;
     }
 
     dialogueBox.scrollTop = dialogueBox.scrollHeight;
-    TelegramApp.haptic('success');
-    addXP(15);
+    if (window.TelegramApp) TelegramApp.haptic('success');
+    if (typeof addXP === 'function') addXP(15);
   } catch (err) {
     console.error('Dialogue error:', err);
     const loaderEl = document.getElementById(loadId);
     if (loaderEl) loaderEl.remove();
   }
+}
+function sendPhysicsDialogueMessage() {
+  sendPhysicsVoiceMessage();
 }
 
 function analyzeUzbekPhysicsAnswer(text, topic) {
