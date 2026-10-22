@@ -307,57 +307,81 @@ function toggleCallMic() {
   }
 }
 
-function startCallMic() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert("Kechirasiz, qurilmangizda nutqni tanish faollashtirilmagan. Matn kiritish tugmasidan foydalaning.");
-    return;
+async function startCallMic() {
+  // 1. Explicitly request microphone hardware permission
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      console.warn('Microphone permission warning:', e.message);
+    }
   }
 
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   isCallMicRecording = true;
   const btn = document.getElementById('btn-call-mic');
   if (btn) btn.classList.add('recording');
   setMascotState('listening');
+  updateCallSubtitles("Eshitmoqdaman... Gapiring (tugatgach, mikrofonga yana bosing)");
 
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
-  callSpeechRecognition = new SpeechRecognition();
-  callSpeechRecognition.continuous = false;
-  callSpeechRecognition.interimResults = true;
-  callSpeechRecognition.lang = callLanguage === 'en' ? 'en-US' : 'uz-UZ';
+  if (SpeechRecognition) {
+    callSpeechRecognition = new SpeechRecognition();
+    callSpeechRecognition.continuous = true; // DO NOT auto-stop on silence
+    callSpeechRecognition.interimResults = true;
+    callSpeechRecognition.lang = callLanguage === 'en' ? 'en-US' : 'uz-UZ';
 
-  callSpeechRecognition.onresult = (e) => {
-    let transcript = '';
-    for (let i = e.resultIndex; i < e.results.length; ++i) {
-      transcript += e.results[i][0].transcript;
+    callSpeechRecognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = 0; i < e.results.length; ++i) {
+        transcript += e.results[i][0].transcript;
+      }
+      if (transcript.trim()) {
+        updateCallSubtitles(`Siz: ${transcript}`);
+      }
+    };
+
+    callSpeechRecognition.onerror = (err) => {
+      console.warn('Call mic error:', err.error);
+      if (err.error === 'not-allowed') {
+        stopCallMic();
+        alert("Mikrofon ruxsati berilmadi. Iltimos, brauzer sozlamalarida mikrofonga ruxsat bering.");
+      }
+      // Do not stop for 'no-speech' or 'audio-capture' - keep listening
+    };
+
+    callSpeechRecognition.onend = () => {
+      // If user is still recording, keep recognition alive
+      if (isCallMicRecording) {
+        try { callSpeechRecognition.start(); } catch(e){}
+      }
+    };
+
+    try {
+      callSpeechRecognition.start();
+    } catch (err) {
+      console.warn('SpeechRecognition start err:', err);
     }
-    updateCallSubtitles(`Siz: ${transcript}`);
-  };
-
-  callSpeechRecognition.onerror = (err) => {
-    console.warn('Call mic error:', err);
-    stopCallMic();
-  };
-
-  callSpeechRecognition.onend = () => {
-    stopCallMic();
-    processCandidateCallSpeech();
-  };
-
-  try {
-    callSpeechRecognition.start();
-  } catch (err) {
-    stopCallMic();
+  } else {
+    updateCallSubtitles("Mikrofon faol. Gapirib bo'lgach, tugmani bosing...");
   }
 }
 
 function stopCallMic() {
+  if (!isCallMicRecording) return;
   isCallMicRecording = false;
   const btn = document.getElementById('btn-call-mic');
   if (btn) btn.classList.remove('recording');
+
   if (callSpeechRecognition) {
-    try { callSpeechRecognition.stop(); } catch(e){}
+    try {
+      callSpeechRecognition.onend = null;
+      callSpeechRecognition.stop();
+    } catch(e){}
   }
+
+  processCandidateCallSpeech();
 }
 
 async function processCandidateCallSpeech() {
@@ -408,6 +432,12 @@ function sendCallTextMessage() {
   input.value = '';
   updateCallSubtitles(`Siz: ${text}`);
   toggleCallTextInput();
+  processCandidateCallSpeech();
+}
+
+function sendCallPreset(text) {
+  if (window.TelegramApp) TelegramApp.haptic('selection');
+  updateCallSubtitles(`Siz: ${text}`);
   processCandidateCallSpeech();
 }
 
