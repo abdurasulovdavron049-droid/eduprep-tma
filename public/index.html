@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GoPrep.ai — IELTS & Fizika Sun'iy Intellekt Platformasi</title>
+  <title>GoPrep.gg — IELTS & Fizika AI Platformasi</title>
   
   <!-- Favicon & Meta -->
   <meta name="description" content="GoPrep uslubidagi sun'iy intellektga asoslangan Fizika va IELTS platformasi">
@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Telegram WebApp SDK (optional fallback if opened in Telegram) -->
+  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <!-- Stylesheet -->
@@ -28,9 +28,9 @@
       <!-- Brand Logo -->
       <div class="sidebar-header">
         <div class="brand-logo">
-          <span class="logo-icon">⚡</span>
+          <span class="logo-icon">🔥</span>
           <div class="logo-text">
-            <h2>GoPrep<span>.ai</span></h2>
+            <h2>GoPrep<span>.gg</span></h2>
             <span class="logo-badge">IELTS & Physics</span>
           </div>
         </div>
@@ -42,7 +42,7 @@
         <div class="user-avatar" id="sidebar-avatar">D</div>
         <div class="user-details">
           <h4 id="sidebar-name">Davronjon</h4>
-          <span class="user-role">🎯 Target: Band 8.0 & Fizika Pro</span>
+          <span class="user-role">🎯 Target: Band 8.0 & Fizika</span>
         </div>
       </div>
 
@@ -55,12 +55,20 @@
           <span class="nav-text">Boshqaruv paneli</span>
         </button>
 
+        <button class="nav-link" onclick="navigate('call')">
+          <span class="nav-icon">🔥</span>
+          <div class="nav-text-group">
+            <span class="nav-text">Preppy Voice Call</span>
+            <span class="nav-tag tag-live">JONLI</span>
+          </div>
+        </button>
+
         <div class="nav-section-title">INGLIZ TILI (IELTS)</div>
 
         <button class="nav-link" onclick="navigate('speaking')">
           <span class="nav-icon">🎙️</span>
           <div class="nav-text-group">
-            <span class="nav-text">AI Speaking Room</span>
+            <span class="nav-text">Speaking Simulator</span>
             <span class="nav-tag tag-live">Part 1-3</span>
           </div>
         </button>
@@ -133,17 +141,18 @@
     <!-- ================= 2. MAIN CONTENT AREA ================= -->
     <div class="main-wrapper">
       
-      <!-- Top Navbar (GoPrep Style) -->
+      <!-- Top Navbar (Clean & Non-overlapping) -->
       <header class="topbar">
         <div class="topbar-left">
           <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
+          <div class="topbar-mobile-brand">🔥 GoPrep<span>.gg</span></div>
           <div class="breadcrumbs" id="breadcrumbs">
             <span>GoPrep</span> / <b id="current-crumb">Boshqaruv paneli</b>
           </div>
         </div>
 
         <div class="topbar-right">
-          <!-- Live User Stats & Controls -->
+          <!-- Desktop User Stats (Hidden on mobile) -->
           <div class="topbar-stats">
             <div class="top-stat-pill pill-accent" title="Maqsadli IELTS bali">
               <span>🎯 Target: Band 8.0</span>
@@ -172,20 +181,132 @@
       <!-- Dynamic Views Container -->
       <main class="content-body" id="content-body">
 
-        <!-- ================= VIEW 1: DASHBOARD ================= -->
-        <section id="view-dashboard" class="page-view active">
-          <!-- Hero Banner -->
-          <div class="dashboard-hero">
-            <div class="hero-content">
-              <span class="badge-accent">GoPrep AI Ta'lim Tizimi</span>
-              <h1>Xush kelibsiz, <span id="dash-username">Davronjon</span>! 🎓</h1>
-              <p>IELTS Speaking, Writing hamda Fizika masalalari bo'yicha GoPrep standartidagi mashg'ulotlarni boshlang.</p>
-              <div class="hero-actions">
-                <button class="btn btn-primary" onclick="navigate('speaking')">🎙️ Speaking Mock Boshlash</button>
-                <button class="btn btn-secondary" onclick="navigate('writing')">✍️ Writing Studio</button>
-                <button class="btn btn-secondary" onclick="navigate('physics-solver')">⚛️ Masala Yechish</button>
+        <!-- ================= VIEW 0: GOPREP LIVE VOICE CALL (FIRE MASCOT) ================= -->
+        <section id="view-call" class="page-view voice-call-screen">
+          <!-- Top Call Header: 00:48 / 10:00 | goprep.gg | Stop button -->
+          <div class="call-topbar">
+            <div class="call-timer-pill" id="call-timer-display">00:00 / 10:00</div>
+            <div class="call-brand-title">goprep<span>.gg</span></div>
+            <button class="call-stop-btn" onclick="stopGoPrepCall()">
+              <span>⏹</span> To'xtatish
+            </button>
+          </div>
+
+          <!-- Animated Fire Mascot Stage -->
+          <div class="mascot-stage" id="mascot-stage" onclick="toggleCallMic()">
+            <div class="mascot-aura"></div>
+            
+            <svg class="goprep-fire-mascot" viewBox="0 0 320 270" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="flameGradRed" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#b91c1c" />
+                  <stop offset="50%" stop-color="#ef4444" />
+                  <stop offset="100%" stop-color="#dc2626" />
+                </linearGradient>
+                <linearGradient id="flameGradOrange" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#ea580c" />
+                  <stop offset="60%" stop-color="#f97316" />
+                  <stop offset="100%" stop-color="#fbbf24" />
+                </linearGradient>
+                <linearGradient id="flameGradYellow" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#f59e0b" />
+                  <stop offset="100%" stop-color="#fef08a" />
+                </linearGradient>
+                <filter id="mascotGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#ef4444" flood-opacity="0.32" />
+                </filter>
+              </defs>
+
+              <!-- Layer 1: Back Red Flames -->
+              <g class="flame-layer back-flames">
+                <path d="M 50 120 C 55 90, 65 50, 75 35 C 85 55, 95 35, 105 20 C 115 45, 128 25, 138 12 C 148 35, 155 20, 160 5 C 168 25, 178 35, 185 12 C 195 28, 205 45, 215 20 C 225 35, 235 55, 245 35 C 255 50, 265 90, 270 120 Z" fill="url(#flameGradRed)" />
+              </g>
+
+              <!-- Layer 2: Middle Orange Flames -->
+              <g class="flame-layer mid-flames">
+                <path d="M 68 120 C 74 95, 82 65, 92 48 C 102 68, 112 50, 122 36 C 132 55, 142 40, 150 22 C 158 40, 168 55, 178 36 C 188 50, 198 68, 208 48 C 218 65, 226 95, 232 120 Z" fill="url(#flameGradOrange)" />
+              </g>
+
+              <!-- Layer 3: Inner Yellow Flames -->
+              <g class="flame-layer front-flames">
+                <path d="M 90 120 C 98 100, 108 78, 118 60 C 128 78, 138 65, 150 42 C 162 65, 172 78, 182 60 C 192 78, 202 100, 210 120 Z" fill="url(#flameGradYellow)" />
+              </g>
+
+              <!-- Pill Face Container -->
+              <g filter="url(#mascotGlow)">
+                <rect x="40" y="95" width="240" height="135" rx="67.5" ry="67.5" fill="#ffffff" stroke="#ff2a1a" stroke-width="15" stroke-linejoin="round" />
+              </g>
+
+              <!-- Slanted Focused Eyes (Matching Screenshot) -->
+              <g class="mascot-eyes" id="mascot-eyes">
+                <!-- Left Eye -->
+                <path d="M 92 148 L 134 162 L 130 178 L 94 164 Z" fill="#111827" />
+                <!-- Right Eye -->
+                <path d="M 228 148 L 186 162 L 190 178 L 226 164 Z" fill="#111827" />
+              </g>
+
+              <!-- Animated Talking Mouth -->
+              <g class="mascot-mouth-container">
+                <path id="mascot-mouth" class="mascot-mouth" d="M 148 182 Q 160 188 172 182 Q 160 184 148 182 Z" fill="#111827" />
+              </g>
+            </svg>
+
+            <!-- Status Pill: ✨ Preppy gapirmoqda... -->
+            <div class="mascot-status-tag" id="mascot-status-tag">
+              <span class="status-sparkle">✨</span>
+              <span id="mascot-status-text">Preppy gapirmoqda...</span>
+            </div>
+          </div>
+
+          <!-- Bottom Call Controls & Live Subtitles -->
+          <div class="call-bottom-container">
+            <!-- Subtitles box -->
+            <div class="call-subtitles-card" id="call-subtitles">
+              "Salom Davronjon! GoPrep jonli suhbatiga xush kelibsiz. Mikrofonga bosing va gapiring!"
+            </div>
+
+            <!-- Call Action Controls -->
+            <div class="call-actions-row">
+              <button class="call-lang-toggle" id="call-lang-btn" onclick="toggleCallLanguage()">
+                🇬🇧 IELTS (English)
+              </button>
+
+              <button class="btn-call-mic" id="btn-call-mic" onclick="toggleCallMic()" title="Gapirish uchun bosing">
+                🎙️
+              </button>
+
+              <button class="call-lang-toggle" onclick="toggleCallTextInput()">
+                💬 Matn
+              </button>
+            </div>
+
+            <!-- Hidden optional text input drawer -->
+            <div id="call-text-drawer" style="display: none; width: 100%; margin-top: 8px;">
+              <div class="input-with-button">
+                <input type="text" id="call-text-input" placeholder="Yoki javobingizni bu yerga yozing..." onkeypress="handleCallTextInput(event)">
+                <button class="btn btn-purple" onclick="sendCallTextMessage()">Yuborish</button>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW 1: DASHBOARD ================= -->
+        <section id="view-dashboard" class="page-view active">
+          <!-- Flagship Hero Banner with Preppy Call -->
+          <div class="dashboard-hero" style="position: relative; overflow: hidden;">
+            <div class="hero-content">
+              <span class="badge-accent">GoPrep.gg Ovozli Sun'iy Intellekt</span>
+              <h1>Xush kelibsiz, <span id="dash-username">Davronjon</span>! 🎓</h1>
+              <p>GoPrep animatsiyali AI repetitori (Preppy) bilan real vaqtda ovozli suhbatlashing.</p>
+              
+              <div class="hero-actions" style="margin-top: 14px;">
+                <button class="btn btn-primary" onclick="navigate('call')" style="background: linear-gradient(135deg, #ef4444, #f97316); border: none; font-weight: 800; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                  🔥 Preppy bilan Jonli Ovozli Suhbat
+                </button>
+                <button class="btn btn-secondary" onclick="navigate('writing')">✍️ Writing Studio</button>
+              </div>
+            </div>
+
             <div class="hero-stats-card">
               <div class="hero-metric">
                 <span class="metric-num">8.0</span>
@@ -201,14 +322,24 @@
 
           <!-- Quick Modules Grid -->
           <div class="grid-modules">
-            <!-- Card 1: IELTS Speaking -->
-            <div class="module-card card-purple" onclick="navigate('speaking')">
-              <div class="card-icon-wrap">🎙️</div>
+            <!-- Card 0: Voice Mascot Call -->
+            <div class="module-card card-purple" onclick="navigate('call')">
+              <div class="card-icon-wrap">🔥</div>
               <div class="card-content">
-                <h3>IELTS AI Speaking Simulator</h3>
-                <p>Part 1, 2 Cue Card (tayyorlanish taymeri bilan) va Part 3. Real-time examiner va Band 9 javoblari.</p>
+                <h3>GoPrep Jonli Ovozli Suhbat (Preppy)</h3>
+                <p>Olov sochli AI repetitor bilan inglizcha IELTS va o'zbekcha fizika bo'yicha jonli ovozli muloqot.</p>
               </div>
               <div class="card-arrow">Boshlash →</div>
+            </div>
+
+            <!-- Card 1: IELTS Speaking -->
+            <div class="module-card card-cyan" onclick="navigate('speaking')">
+              <div class="card-icon-wrap">🎙️</div>
+              <div class="card-content">
+                <h3>IELTS Speaking Simulator (Part 1-3)</h3>
+                <p>Part 2 Cue Card, 1 daqiqalik tayyorlanish taymeri, qoralama daftarcha va Band 9 model javoblari.</p>
+              </div>
+              <div class="card-arrow">Mashq qilish →</div>
             </div>
 
             <!-- Card 2: IELTS Writing -->
@@ -216,36 +347,25 @@
               <div class="card-icon-wrap">✍️</div>
               <div class="card-content">
                 <h3>IELTS Writing Studio</h3>
-                <p>Task 1 & 2 imtihon taymeri, 4 ta rasmiy mezon (TR, CC, LR, GRA), gapma-gap tahlil va Band 9 model rewrite.</p>
+                <p>Task 1 & 2 imtihon taymeri, 4 ta mezon (TR, CC, LR, GRA), gapma-gap xatolar tahlili va Band 9 qayta yozish.</p>
               </div>
               <div class="card-arrow">Tekshirish →</div>
             </div>
 
             <!-- Card 3: Fizika Masala Yechuvchi -->
-            <div class="module-card card-cyan" onclick="navigate('physics-solver')">
+            <div class="module-card card-emerald" onclick="navigate('physics-solver')">
               <div class="card-icon-wrap">⚛️</div>
               <div class="card-content">
-                <h3>Fizika AI Solver</h3>
+                <h3>Fizika AI Masala Yechuvchi</h3>
                 <p>Berilgan kattaliklar, formulalar va bosqichma-bosqich hisoblash tahlili.</p>
               </div>
               <div class="card-arrow">Yechish →</div>
             </div>
-
-            <!-- Card 4: O'zbekcha Fizika Suhbati -->
-            <div class="module-card card-emerald" onclick="navigate('physics-voice')">
-              <div class="card-icon-wrap">🗣️</div>
-              <div class="card-content">
-                <h3>O'zbekcha Fizika Suhbati</h3>
-                <p>Koinot, kvant fizikasi va Nyuton qonunlari bo'yicha sun'iy intellekt professor bilan jonli suhbat.</p>
-              </div>
-              <div class="card-arrow">Suhbatlashish →</div>
-            </div>
           </div>
         </section>
 
-        <!-- ================= VIEW 2: AI SPEAKING ROOM (GOPREP STYLE) ================= -->
+        <!-- ================= VIEW 2: AI SPEAKING ROOM ================= -->
         <section id="view-speaking" class="page-view">
-          <!-- 3-Part Navigation Tabs -->
           <div class="speaking-part-nav">
             <button class="part-tab-btn active" id="part-tab-1" onclick="switchSpeakingPart(1)">🎙️ Part 1: Interview</button>
             <button class="part-tab-btn" id="part-tab-2" onclick="switchSpeakingPart(2)">📋 Part 2: Cue Card & Prep</button>
@@ -253,17 +373,14 @@
           </div>
 
           <div class="speaking-studio-layout">
-            <!-- Left: Examiner & Audio Controls -->
             <div class="studio-panel examiner-panel">
               <div class="panel-header">
                 <div class="examiner-avatar-box">
-                  <div class="examiner-avatar">👨‍🏫</div>
+                  <div class="examiner-avatar">🔥</div>
                   <div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <span class="badge-tag">IELTS Speaking Simulator</span>
-                      <div class="soundwave-bars" title="Examiner ovoz to'lqinlari">
-                        <span></span><span></span><span></span><span></span><span></span>
-                      </div>
+                      <div class="soundwave-bars"><span></span><span></span><span></span><span></span><span></span></div>
                     </div>
                     <h2>Preppy AI Examiner</h2>
                   </div>
@@ -279,9 +396,7 @@
                 </div>
               </div>
 
-              <!-- Part 1 & 3 Container -->
               <div id="speaking-part1-container">
-                <!-- Chat Dialogue Box -->
                 <div class="dialogue-box" id="speaking-dialogue-box">
                   <div class="chat-bubble ai-bubble">
                     <div class="bubble-header">
@@ -292,7 +407,6 @@
                   </div>
                 </div>
 
-                <!-- Voice Input Controls -->
                 <div class="voice-controls-bar">
                   <button class="btn-mic-large" id="mic-toggle-btn" onclick="toggleSpeechRecognition()" title="Ovoz bilan gapirish">
                     <span class="mic-icon">🎙️</span>
@@ -305,13 +419,9 @@
                 </div>
               </div>
 
-              <!-- Part 2: Cambridge Cue Card Container (Dynamically toggled) -->
-              <div id="speaking-part2-container" style="display: none;">
-                <!-- Cue Card rendered by english.js -->
-              </div>
+              <div id="speaking-part2-container" style="display: none;"></div>
             </div>
 
-            <!-- Right: Real-time Feedback & Scores -->
             <div class="studio-panel feedback-panel">
               <div class="panel-header">
                 <h3>📊 GoPrep Real-Time Scorecard</h3>
@@ -320,44 +430,31 @@
               
               <div class="criteria-progress">
                 <div class="criterion-item">
-                  <div class="crit-head">
-                    <span>Fluency & Coherence</span>
-                    <b id="crit-val-fluency">7.5</b>
-                  </div>
+                  <div class="crit-head"><span>Fluency & Coherence</span><b id="crit-val-fluency">7.5</b></div>
                   <div class="progress-track"><div class="progress-fill" id="crit-bar-fluency" style="width: 80%;"></div></div>
                 </div>
 
                 <div class="criterion-item">
-                  <div class="crit-head">
-                    <span>Lexical Resource (Vocabulary)</span>
-                    <b id="crit-val-vocab">7.5</b>
-                  </div>
+                  <div class="crit-head"><span>Lexical Resource</span><b id="crit-val-vocab">7.5</b></div>
                   <div class="progress-track"><div class="progress-fill" id="crit-bar-vocab" style="width: 80%;"></div></div>
                 </div>
 
                 <div class="criterion-item">
-                  <div class="crit-head">
-                    <span>Grammatical Range & Accuracy</span>
-                    <b id="crit-val-grammar">7.5</b>
-                  </div>
+                  <div class="crit-head"><span>Grammar & Accuracy</span><b id="crit-val-grammar">7.5</b></div>
                   <div class="progress-track"><div class="progress-fill" id="crit-bar-grammar" style="width: 80%;"></div></div>
                 </div>
 
                 <div class="criterion-item">
-                  <div class="crit-head">
-                    <span>Pronunciation</span>
-                    <b id="crit-val-pronun">8.0</b>
-                  </div>
+                  <div class="crit-head"><span>Pronunciation</span><b id="crit-val-pronun">8.0</b></div>
                   <div class="progress-track"><div class="progress-fill" id="crit-bar-pronun" style="width: 85%;"></div></div>
                 </div>
               </div>
 
               <div class="feedback-tips-card" id="speaking-tips-card">
                 <h4>💡 Preppy AI Maslahati:</h4>
-                <p>Gap tuzishda oddiy so'zlar o'rniga C1 kollokatsiyalaridan foydalaning. Masalan: <i>"I like traveling"</i> o'rniga <i>"I am particularly keen on immersing myself in diverse cultures"</i> deyish ballni Band 8.0 ga olib chiqadi.</p>
+                <p>Oddiy so'zlar o'rniga C1 kollokatsiyalardan foydalaning. Masalan: <i>"I like traveling"</i> o'rniga <i>"I am particularly keen on immersing myself in diverse cultures"</i> deyish ballni oshiradi.</p>
               </div>
 
-              <!-- Model Band 9 Answer Button -->
               <div style="margin-top: 14px;">
                 <button class="btn btn-secondary btn-large" onclick="showBand9ModelAnswer()">
                   <span>🌟 Band 9 Model Javobni Ko'rish</span>
@@ -367,15 +464,13 @@
           </div>
         </section>
 
-        <!-- ================= VIEW 3: WRITING STUDIO (GOPREP STYLE) ================= -->
+        <!-- ================= VIEW 3: WRITING STUDIO ================= -->
         <section id="view-writing" class="page-view">
-          <!-- Writing Task Selector -->
           <div class="writing-task-selector">
             <button class="task-tab-btn active" id="btn-task-2" onclick="switchWritingTask(2)">📄 Task 2: Academic Essay (250+ so'z)</button>
             <button class="task-tab-btn" id="btn-task-1" onclick="switchWritingTask(1)">📊 Task 1: Academic Report (150+ so'z)</button>
           </div>
 
-          <!-- Official Exam Timer & Word Meter Widget -->
           <div class="exam-timer-bar">
             <div class="timer-left">
               <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">⏱️ Imtihon Taymeri:</span>
@@ -386,27 +481,19 @@
                 <button class="timer-ctrl-btn" onclick="resetWritingTimer()">🔄 Qaytarish</button>
               </div>
             </div>
-
-            <div>
-              <span class="badge-tag" id="writing-task-title">IELTS Writing Task 2</span>
-            </div>
+            <div><span class="badge-tag" id="writing-task-title">IELTS Writing Task 2</span></div>
           </div>
 
           <div class="writing-studio-layout">
-            <!-- Left: Essay Editor -->
             <div class="studio-panel editor-panel">
-              <!-- Live Word Count Meter -->
               <div class="word-meter-container">
                 <div class="word-meter-header">
                   <span style="color: var(--text-muted);">Insho hajmi:</span>
                   <span id="word-meter-percent" style="font-weight: 700; color: white;">0 / 250 so'z (0%)</span>
                 </div>
-                <div class="word-meter-track">
-                  <div class="word-meter-fill" id="word-meter-fill"></div>
-                </div>
+                <div class="word-meter-track"><div class="word-meter-fill" id="word-meter-fill"></div></div>
               </div>
 
-              <!-- Sample Topics Picker -->
               <div class="sample-chips-row" id="writing-chips-row">
                 <span class="chip-label">Namunalar:</span>
                 <button class="chip-btn" onclick="setWritingSample('task2_1')">Online Education vs Traditional</button>
@@ -422,15 +509,12 @@
               </div>
             </div>
 
-            <!-- Right: Detailed Evaluation Output -->
             <div class="studio-panel result-panel">
-              <div class="panel-header">
-                <h3>📋 GoPrep Evaluation Report</h3>
-              </div>
+              <div class="panel-header"><h3>📋 GoPrep Evaluation Report</h3></div>
               <div id="writing-result" class="evaluation-content">
                 <div class="empty-state-notice">
                   <span class="empty-icon">📝</span>
-                  <p>Inshongizni chap tomondagi maydonga yozing va <b>"Inshoni Tekshirish"</b> tugmasini bosing. GoPrep AI rasmiy 4 ta mezon (TR, CC, LR, GRA) bo'yicha tekshirib, xatolarni ajratib ko'rsatadi.</p>
+                  <p>Inshongizni chap tomonga yozing va <b>"Inshoni Tekshirish"</b> tugmasini bosing. AI rasmiy 4 ta mezon (TR, CC, LR, GRA) bo'yicha tahlil qilib beradi.</p>
                 </div>
               </div>
             </div>
@@ -440,7 +524,6 @@
         <!-- ================= VIEW 4: FIZIKA AI SOLVER ================= -->
         <section id="view-physics-solver" class="page-view">
           <div class="physics-studio-layout">
-            <!-- Left: Problem Input -->
             <div class="studio-panel">
               <div class="panel-header">
                 <div>
@@ -466,11 +549,8 @@
               </div>
             </div>
 
-            <!-- Right: Step-by-Step Solution -->
             <div class="studio-panel">
-              <div class="panel-header">
-                <h3>📐 Yechim va Formulalar</h3>
-              </div>
+              <div class="panel-header"><h3>📐 Yechim va Formulalar</h3></div>
               <div id="physics-solution-result" class="evaluation-content">
                 <div class="empty-state-notice">
                   <span class="empty-icon">⚛️</span>
@@ -518,12 +598,8 @@
             </div>
 
             <div class="studio-panel feedback-panel">
-              <div class="panel-header">
-                <h3>📚 Asosiy Formulalar Ma'lumotnomasi</h3>
-              </div>
-              <div id="formula-quick-list" class="formula-cards-scroll">
-                <!-- Rendered dynamically -->
-              </div>
+              <div class="panel-header"><h3>📚 Asosiy Formulalar Ma'lumotnomasi</h3></div>
+              <div id="formula-quick-list" class="formula-cards-scroll"></div>
             </div>
           </div>
         </section>
@@ -531,21 +607,15 @@
         <!-- ================= VIEW 6: PHYSICS QUIZ ================= -->
         <section id="view-physics-quiz" class="page-view">
           <div class="studio-panel max-w-quiz">
-            <div class="panel-header">
-              <h2>🎯 DTM & SAT Fizika Test Trenajyori</h2>
-            </div>
-            <div id="physics-quiz-container">
-              <!-- Rendered via JS -->
-            </div>
+            <div class="panel-header"><h2>🎯 DTM & SAT Fizika Test Trenajyori</h2></div>
+            <div id="physics-quiz-container"></div>
           </div>
         </section>
 
         <!-- ================= VIEW 7: DUAL MODE ================= -->
         <section id="view-dual-mode" class="page-view">
           <div class="studio-panel">
-            <div class="panel-header">
-              <h2>🚀 Physics in English (SAT / AP Physics)</h2>
-            </div>
+            <div class="panel-header"><h2>🚀 Physics in English (SAT / AP Physics)</h2></div>
             <div class="dual-mode-tabs">
               <button class="btn btn-secondary active" onclick="openDualSection('glossary')">Science Glossary</button>
               <button class="btn btn-secondary" onclick="openDualSection('sat-questions')">SAT Questions</button>
@@ -564,9 +634,7 @@
               </div>
               <span style="font-size: 0.8rem; color: var(--text-muted);">Kartani o'girish uchun ustiga bosing</span>
             </div>
-            <div id="vocab-cards-container">
-              <!-- Rendered with 3D flip by english.js -->
-            </div>
+            <div id="vocab-cards-container"></div>
           </div>
         </section>
 
@@ -590,6 +658,31 @@
         </section>
 
       </main>
+
+      <!-- ================= 3. MOBILE BOTTOM NAVIGATION BAR ================= -->
+      <nav class="mobile-bottom-nav">
+        <button class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard')">
+          <span class="bnav-icon">🏠</span>
+          <span>Asosiy</span>
+        </button>
+        <button class="bnav-item" id="bnav-call" onclick="navigate('call')">
+          <span class="bnav-icon">🔥</span>
+          <span>Preppy Call</span>
+        </button>
+        <button class="bnav-item" id="bnav-writing" onclick="navigate('writing')">
+          <span class="bnav-icon">✍️</span>
+          <span>Writing</span>
+        </button>
+        <button class="bnav-item" id="bnav-physics-solver" onclick="navigate('physics-solver')">
+          <span class="bnav-icon">⚛️</span>
+          <span>Fizika</span>
+        </button>
+        <button class="bnav-item" id="bnav-tutor" onclick="navigate('tutor')">
+          <span class="bnav-icon">🤖</span>
+          <span>Ustoz</span>
+        </button>
+      </nav>
+
     </div>
   </div>
 

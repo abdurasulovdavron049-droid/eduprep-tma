@@ -1,6 +1,7 @@
 /**
- * GoPrep.ai — Main Application Orchestrator
- * Controls navigation, views, sidebar toggling, Gemini AI integration, and state.
+ * GoPrep.gg — Main Application Orchestrator
+ * Controls navigation, views, sidebar toggling, Gemini AI integration, state,
+ * and the Interactive Fire Mascot Call Room.
  */
 
 let appState = {
@@ -12,6 +13,7 @@ let appState = {
 
 const viewTitles = {
   'dashboard': 'Boshqaruv paneli',
+  'call': 'Preppy Live Call',
   'speaking': 'IELTS AI Speaking Room',
   'writing': 'IELTS Writing Studio',
   'vocab': 'Smart Flashcards (3D)',
@@ -35,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof renderWritingTimer === 'function') renderWritingTimer();
   if (typeof updateWritingWordCount === 'function') updateWritingWordCount();
 
-  // Telegram SDK sync if present
+  // Telegram SDK sync
   if (window.TelegramApp) {
     TelegramApp.init();
   }
@@ -81,7 +83,15 @@ window.isSoundActive = () => appState.soundEnabled;
 
 // GoPrep View Navigation
 function navigate(viewId) {
+  const previousView = appState.currentView;
   appState.currentView = viewId;
+
+  // Cleanup prior call if leaving call view
+  if (previousView === 'call' && viewId !== 'call') {
+    if (typeof stopCallMic === 'function') stopCallMic();
+    if (callTimerInterval) clearInterval(callTimerInterval);
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
 
   // Toggle active page view
   document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
@@ -101,6 +111,16 @@ function navigate(viewId) {
       btn.classList.add('active');
     }
   });
+
+  // Update active mobile bottom nav button
+  document.querySelectorAll('.bnav-item').forEach(btn => btn.classList.remove('active'));
+  const bnavBtn = document.getElementById(`bnav-${viewId}`);
+  if (bnavBtn) bnavBtn.classList.add('active');
+
+  // Launch Call if entering call view
+  if (viewId === 'call') {
+    startGoPrepCall();
+  }
 
   // Close sidebar on mobile
   closeSidebar();
@@ -179,6 +199,218 @@ async function callGemini(prompt, systemInstruction) {
 }
 window.callGemini = callGemini;
 
+// ================= GOPREP LIVE CALL WITH FIRE MASCOT (SCREENSHOT 2) =================
+let callTimerInterval = null;
+let callSecondsElapsed = 0;
+let callLanguage = 'en'; // 'en' or 'uz'
+let isCallMicRecording = false;
+let callSpeechRecognition = null;
+
+function startGoPrepCall() {
+  callSecondsElapsed = 0;
+  clearInterval(callTimerInterval);
+  renderCallTimer();
+
+  callTimerInterval = setInterval(() => {
+    callSecondsElapsed++;
+    renderCallTimer();
+    if (callSecondsElapsed >= 600) { // 10 minutes limit
+      stopGoPrepCall();
+      alert("⏱️ 10 daqiqalik suhbat vaqti yakunlandi!");
+    }
+  }, 1000);
+
+  const initialGreeting = callLanguage === 'en'
+    ? "Hello Davronjon! Welcome to your GoPrep Speaking session. What would you like to discuss today?"
+    : "Assalomu alaykum, Davronjon! GoPrep fizika ovozli suhbatiga xush kelibsiz. Qaysi mavzuni tushuntirib beray?";
+
+  updateCallSubtitles(initialGreeting);
+  playMascotSpeech(initialGreeting);
+}
+
+function stopGoPrepCall() {
+  clearInterval(callTimerInterval);
+  stopCallMic();
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  setMascotState('idle');
+  navigate('dashboard');
+}
+
+function renderCallTimer() {
+  const el = document.getElementById('call-timer-display');
+  if (!el) return;
+  const mins = Math.floor(callSecondsElapsed / 60);
+  const secs = callSecondsElapsed % 60;
+  el.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs} / 10:00`;
+}
+
+function setMascotState(state) {
+  const stage = document.getElementById('mascot-stage');
+  const tagText = document.getElementById('mascot-status-text');
+  if (!stage) return;
+
+  stage.classList.remove('speaking', 'listening');
+
+  if (state === 'speaking') {
+    stage.classList.add('speaking');
+    if (tagText) tagText.innerText = "Preppy gapirmoqda...";
+  } else if (state === 'listening') {
+    stage.classList.add('listening');
+    if (tagText) tagText.innerText = "Sizni eshityapman... (Gapiring)";
+  } else {
+    if (tagText) tagText.innerText = "Mikrofonga bosing va gapiring";
+  }
+}
+
+function updateCallSubtitles(text) {
+  const el = document.getElementById('call-subtitles');
+  if (el) el.innerText = `"${text}"`;
+}
+
+function playMascotSpeech(text) {
+  if (window.TelegramApp) TelegramApp.haptic('light');
+  if (!appState.soundEnabled) return;
+
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = callLanguage === 'en' ? 'en-US' : 'uz-UZ';
+    utterance.rate = 0.96;
+    utterance.pitch = 1.05;
+
+    utterance.onstart = () => setMascotState('speaking');
+    utterance.onend = () => setMascotState('idle');
+    utterance.onerror = () => setMascotState('idle');
+
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+function toggleCallLanguage() {
+  callLanguage = callLanguage === 'en' ? 'uz' : 'en';
+  const btn = document.getElementById('call-lang-btn');
+  if (btn) {
+    btn.innerText = callLanguage === 'en' ? '🇬🇧 IELTS (English)' : '🇺🇿 Fizika (O\'zbek)';
+  }
+  const switchMsg = callLanguage === 'en' 
+    ? "Switched to English IELTS Speaking mode." 
+    : "O'zbek tili Fizika rejimiga o'tildi.";
+  updateCallSubtitles(switchMsg);
+  playMascotSpeech(switchMsg);
+}
+
+function toggleCallMic() {
+  if (isCallMicRecording) {
+    stopCallMic();
+  } else {
+    startCallMic();
+  }
+}
+
+function startCallMic() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Kechirasiz, qurilmangizda nutqni tanish faollashtirilmagan. Matn kiritish tugmasidan foydalaning.");
+    return;
+  }
+
+  isCallMicRecording = true;
+  const btn = document.getElementById('btn-call-mic');
+  if (btn) btn.classList.add('recording');
+  setMascotState('listening');
+
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+  callSpeechRecognition = new SpeechRecognition();
+  callSpeechRecognition.continuous = false;
+  callSpeechRecognition.interimResults = true;
+  callSpeechRecognition.lang = callLanguage === 'en' ? 'en-US' : 'uz-UZ';
+
+  callSpeechRecognition.onresult = (e) => {
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; ++i) {
+      transcript += e.results[i][0].transcript;
+    }
+    updateCallSubtitles(`Siz: ${transcript}`);
+  };
+
+  callSpeechRecognition.onerror = (err) => {
+    console.warn('Call mic error:', err);
+    stopCallMic();
+  };
+
+  callSpeechRecognition.onend = () => {
+    stopCallMic();
+    processCandidateCallSpeech();
+  };
+
+  try {
+    callSpeechRecognition.start();
+  } catch (err) {
+    stopCallMic();
+  }
+}
+
+function stopCallMic() {
+  isCallMicRecording = false;
+  const btn = document.getElementById('btn-call-mic');
+  if (btn) btn.classList.remove('recording');
+  if (callSpeechRecognition) {
+    try { callSpeechRecognition.stop(); } catch(e){}
+  }
+}
+
+async function processCandidateCallSpeech() {
+  const subEl = document.getElementById('call-subtitles');
+  let userText = subEl?.innerText?.replace(/^"Siz:\s*|"$|^"/g, '').trim();
+  if (!userText || userText.length < 2) {
+    setMascotState('idle');
+    return;
+  }
+
+  setMascotState('speaking');
+  updateCallSubtitles("Preppy o'ylamoqda...");
+
+  const sysPrompt = callLanguage === 'en'
+    ? "You are Preppy, the animated fire mascot and certified IELTS Speaking examiner at GoPrep. Reply in 1-2 friendly, conversational sentences with 1 vocabulary tip, then ask 1 engaging question. Keep it concise."
+    : "Sen GoPrep'ning olov sochli qahramoni 'Preppy'san. Fizika bo'yicha samimiy, qisqa va qiziqarli qilib 1-2 jumlada javob ber va bitta savol ber.";
+
+  let reply = await callGemini(userText, sysPrompt);
+  if (!reply) {
+    reply = callLanguage === 'en'
+      ? "That is a very thoughtful perspective! In IELTS Speaking, expanding on your reasons helps boost your Fluency. How did you first get interested in that?"
+      : "Ajoyib fikr! Fizika qonuniyatlarini kundalik hayotda ko'ra bilish juda muhim. Bu haqida yana qanday misollarni bilasiz?";
+  }
+
+  const cleanReply = reply.replace(/<[^>]*>?/gm, '').trim();
+  updateCallSubtitles(cleanReply);
+  playMascotSpeech(cleanReply);
+  addXP(15);
+}
+
+function toggleCallTextInput() {
+  const drawer = document.getElementById('call-text-drawer');
+  if (drawer) {
+    drawer.style.display = drawer.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function handleCallTextInput(e) {
+  if (e.key === 'Enter') {
+    sendCallTextMessage();
+  }
+}
+
+function sendCallTextMessage() {
+  const input = document.getElementById('call-text-input');
+  const text = input?.value?.trim();
+  if (!text) return;
+  input.value = '';
+  updateCallSubtitles(`Siz: ${text}`);
+  toggleCallTextInput();
+  processCandidateCallSpeech();
+}
+
 // ================= AI TUTOR LIVE CHAT =================
 function handleTutorKeyPress(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -255,4 +487,9 @@ function clearTutorChat() {
       Chat tozalandi. Qanday yangi savol yoki mavzuni o'rganamiz?
     </div>
   `;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
